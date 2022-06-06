@@ -10,13 +10,13 @@ class BcsPolynomialFit:
     def __init__(self):
         # constant parameters
         self.__kernel_size = (3, 3)
-        self.__threshold = 20
+        self.__threshold = 10
         self.__polynomial_degree = 30
 
         self.__characteristic_bcs_info = {}
         self.__characteristic_bcs_images = {}
 
-    def set_characteristic_bsc_images(self, bcs_images: dict):
+    def set_characteristic_bcs_images(self, bcs_images: dict):
         self.__characteristic_bcs_images = bcs_images
 
     def create_characteristic_polynomials(self):
@@ -35,16 +35,17 @@ class BcsPolynomialFit:
     # QUESTION: When I use the polynomial coefficients to measure the MSE the it works, but doesn't make sense to me,
     # because we need to pass the y values to MSE function, so I think the correct is to create a range for the x values
     # and pass it to the polynomials, but when I do this, the results are worse than before.
-    def predict(self, image_path):
+    def predict(self, image_path: str) -> float:
         mse_scores = {}
         cow_image, thresh, top_back_shape, x, y, polynomial_coefficients, polynomial = self.__create_polynomial(image_path)
 
+        # x = np.arange(-40, 40)
+
         for bcs, info in self.__characteristic_bcs_info.items():
+            # mse_scores[bcs] = mean_squared_error(info["polynomial"](x), polynomial(x))
             mse_scores[bcs] = mean_squared_error(info["polynomial"], polynomial)
 
-        print(mse_scores)
-
-        return min(mse_scores, key=mse_scores.get)
+        return float(min(mse_scores, key=mse_scores.get))
 
     def show_characteristic_polynomials(self):
         for bcs, info in self.__characteristic_bcs_info.items():
@@ -70,7 +71,7 @@ class BcsPolynomialFit:
             ax[3].set_title(f"Polynomial degree = {self.__polynomial_degree}")
         plt.show()
 
-    def __create_polynomial(self, image_path):
+    def __create_polynomial(self, image_path: str):
         cow_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         _, thresh = cv2.threshold(cow_image, self.__threshold, 255, cv2.THRESH_BINARY)
 
@@ -123,14 +124,35 @@ if __name__ == "__main__":
     images_path = os.path.abspath('../../images/grabcut')
 
     bcs_polynomial_fit = BcsPolynomialFit()
-    bcs_polynomial_fit.set_characteristic_bsc_images({
-        "2.75": images_path + "/ECC_2.75/grabcut_output(2).png",
-        "3.0": images_path + "/ECC_3.0/grabcut_output(1).png",
-        "4.0": images_path + "/ECC_4.0/grabcut_4.png"
-    })
+    train_images = {
+        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "grabcut_2.png",
+        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_1.png",
+        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "grabcut_1.png",
+        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "grabcut_1.png",
+        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "grabcut_1.png",
+        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "grabcut_4.png",
+        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "grabcut_1.png",
+    }
+    bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
     # bcs_polynomial_fit.show_characteristic_polynomials()
 
-    cow_test = images_path + "/ECC_4.0/grabcut_3.png"
-    print(f"The BCS of the cow is probably: {bcs_polynomial_fit.predict(cow_test)}")
+    results = {"right": 0, "wrong": 0}
 
+    # directory[0] -> directory path
+    # directory[1] -> subdirectories names
+    # directory[2] -> directory files
+    for directory in os.walk(images_path):
+        if len(directory[1]) == 0:
+            for image_file in directory[2]:  # walk through the image files in directories
+                test_cow = directory[0] + os.sep + image_file
+                real_bcs = float(directory[0].split(os.sep)[-1].split("_")[-1])  # get the BCS number from the directory name
+
+                if train_images[real_bcs] != test_cow:  # check if the cows_and_masks image is the train image
+                    predicted_bcs = bcs_polynomial_fit.predict(test_cow)
+                    if real_bcs == predicted_bcs:
+                        results["right"] += 1
+                    else:
+                        results["wrong"] += 1
+
+    print(results)
