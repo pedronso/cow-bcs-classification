@@ -148,7 +148,7 @@ if __name__ == "__main__":
                 test_cow = directory[0] + os.sep + image_file
                 real_bcs = float(directory[0].split(os.sep)[-1].split("_")[-1])  # get the BCS number from the directory name
 
-                if train_images[real_bcs] != test_cow:  # check if the cows_and_masks image is the train image
+                if train_images[real_bcs] != test_cow:  # check if the test image is the train image
                     predicted_bcs = bcs_polynomial_fit.predict(test_cow)
                     if real_bcs == predicted_bcs:
                         results["right"] += 1
