@@ -43,21 +43,34 @@ class BcsPolynomialFit:
         fig, ax = plt.subplots(2, 4, figsize=(15, 10))
 
         for bcs, info in self.__characteristic_bcs_info.items():
-            new_x_real = np.linspace(sorted(info["x"])[0], sorted(info["x"])[-1], 500)
-            new_y_real = info["polynomial"](new_x_real)
+            min_x_real = sorted(info["x"])[0]
+            max_x_real = sorted(info["x"])[-1]
+            min_x_predict = sorted(x)[0]
+            max_x_predict = sorted(x)[-1]
 
-            new_x_predict = np.linspace(sorted(x)[0], sorted(x)[-1], 500)
+            new_x_real = np.linspace(min_x_real, max_x_real, 500)
+            new_y_real = info["polynomial"](new_x_real)
+            new_x_predict = np.linspace(min_x_predict, max_x_predict, 500)
             new_y_predict = polynomial(new_x_predict)
 
-            mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict)
+            min_y_real = sorted(new_y_real)[0]
+            max_y_real = sorted(new_y_real)[-1]
+            min_y_predict = sorted(new_y_predict)[0]
+            max_y_predict = sorted(new_y_predict)[-1]
+
+            cx = (max_x_predict - min_x_predict) / (max_x_real - min_x_real)
+            cy = (max_y_predict - min_y_predict) / (max_y_real - min_y_real)
+
+            mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict / cy)
 
             if j > 3:
                 i += 1
                 j = 0
 
             ax[i, j].plot(new_x_real, new_y_real, "o", markersize=2, color="orange")
-            ax[i, j].plot(new_x_predict, new_y_predict, "o", markersize=2)
-            ax[i, j].legend([f"known poly - ECC: {bcs}", f"poly to be predicted - ECC: {real_bcs}"], loc="best")
+            ax[i, j].plot(new_x_predict, new_y_predict, "o", markersize=2, color="blue")
+            ax[i, j].plot(new_x_predict / cx, new_y_predict / cy, "o", markersize=2, color="green")
+            ax[i, j].legend([f"known poly - ECC: {bcs}", f"poly to be predicted - ECC: {real_bcs}", "resized poly"], loc="best")
 
             j += 1
 
@@ -169,7 +182,7 @@ def main():
 
     results = {"right": 0, "wrong": 0}
 
-    # print(f'The predicted bcs is: {bcs_polynomial_fit.predict(images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_4.png", 3.0)}')
+    # print(f'The predicted bcs is: {bcs_polynomial_fit.predict(images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_2.png", 3.25)}')
 
     # directory[0] -> directory path
     # directory[1] -> subdirectories names
@@ -183,6 +196,7 @@ def main():
 
                 if train_images[real_bcs] != test_cow:  # check if the test image is the train image
                     predicted_bcs = bcs_polynomial_fit.predict(test_cow, real_bcs)
+                    print(f"Real: {real_bcs} - Predicted: {predicted_bcs}")
                     if real_bcs == predicted_bcs:
                         results["right"] += 1
                     else:
