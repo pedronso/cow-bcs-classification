@@ -70,6 +70,7 @@ class BcsPolynomialFit:
             ax[i, j].plot(new_x_real, new_y_real, "o", markersize=2, color="orange")
             ax[i, j].plot(new_x_predict, new_y_predict, "o", markersize=2, color="blue")
             ax[i, j].plot(new_x_predict / cx, new_y_predict / cy, "o", markersize=2, color="green")
+            ax[i, j].axis
             ax[i, j].legend([f"known poly - ECC: {bcs}", f"poly to be predicted - ECC: {real_bcs}", "resized poly"], loc="best")
 
             j += 1
