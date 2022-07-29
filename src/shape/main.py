@@ -70,7 +70,7 @@ class BcsPolynomialFit:
             ax[i, j].plot(new_x_real, new_y_real, "o", markersize=2, color="orange")
             ax[i, j].plot(new_x_predict, new_y_predict, "o", markersize=2, color="blue")
             ax[i, j].plot(new_x_predict / cx, new_y_predict / cy, "o", markersize=2, color="green")
-            ax[i, j].axis
+            ax[i, j].axis("equal")
             ax[i, j].legend([f"known poly - ECC: {bcs}", f"poly to be predicted - ECC: {real_bcs}", "resized poly"], loc="best")
 
             j += 1
@@ -80,9 +80,40 @@ class BcsPolynomialFit:
 
         return float(min(mse_scores, key=mse_scores.get))
 
+    def derivative_analysis(self):
+        i = 0
+        j = 0
+        fig, ax = plt.subplots(2, 4, figsize=(15, 10))
+
+        for bcs, info in self.__characteristic_bcs_info.items():
+            min_x_real = sorted(info["x"])[0]
+            max_x_real = sorted(info["x"])[-1]
+
+            new_x_real = np.linspace(min_x_real, max_x_real, 500)
+            new_y_real = info["polynomial"](new_x_real)
+
+            if j > 3:
+                i += 1
+                j = 0
+
+            real_poly_derivative = np.gradient(info["polynomial"](new_x_real), new_x_real)
+
+            critical_points = new_x_real[1:][(real_poly_derivative[1:] * real_poly_derivative[:-1]) <= 0]
+            print(f"ECC: {bcs} - Qtd. de pontos críticos: {len(critical_points)}")
+
+            ax[i, j].plot(new_x_real, new_y_real, "o", markersize=2, color="blue")
+            ax[i, j].plot(new_x_real, real_poly_derivative, "o", markersize=2, color="green")
+            ax[i, j].plot(critical_points, info["polynomial"](critical_points), "o", markersize=5, color="red")
+            ax[i, j].legend([f"ECC: {bcs}", "derivative", "critical points"], loc="upper right")
+
+            ax[i, j].axis("equal")
+
+            j += 1
+        plt.show()
+
     def show_characteristic_polynomials(self):
         for bcs, info in self.__characteristic_bcs_info.items():
-            fig, ax = plt.subplots(1, 5, figsize=(15, 5))
+            fig, ax = plt.subplots(1, 4, figsize=(12, 5))
 
             ax[0].imshow(cv2.cvtColor(info["image"], cv2.COLOR_GRAY2RGB))
             ax[0].set_title(f"Cow BCS = {bcs}")
@@ -99,14 +130,7 @@ class BcsPolynomialFit:
             ax[3].plot(info["x"], polynomial_results, "o", markersize=3)
             ax[3].set_title(f"Polynomial degree = {self.__polynomial_degree}")
             ax[3].legend(["cow points", "polynomial"], loc="best")
-
-            new_x_test = np.linspace(sorted(info["x"])[0], sorted(info["x"])[-1], 500)
-            new_y_test = info["polynomial"](new_x_test)
-
-            ax[4].plot(new_x_test, new_y_test, "o", markersize=3, color="orange")
-            ax[4].plot(info["x"], polynomial_results, "o", markersize=3)
-            ax[4].set_title("Resample")
-            ax[4].legend(["resampled", "polynomial"], loc="best")
+            ax[3].axis("equal")
 
             # break
         plt.show()
@@ -180,31 +204,31 @@ def main():
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
     # bcs_polynomial_fit.show_characteristic_polynomials()
+    bcs_polynomial_fit.derivative_analysis()
 
-    results = {"right": 0, "wrong": 0}
-
-    # print(f'The predicted bcs is: {bcs_polynomial_fit.predict(images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_2.png", 3.25)}')
+    # results = {"right": 0, "wrong": 0}
 
     # directory[0] -> directory path
     # directory[1] -> subdirectories names
     # directory[2] -> directory files
-    for directory in os.walk(images_path):
-        if len(directory[1]) == 0:
-            for image_file in directory[2]:  # walk through the image files in directories
-                test_cow = directory[0] + os.sep + image_file
-                real_bcs = float(
-                    directory[0].split(os.sep)[-1].split("_")[-1])  # get the BCS number from the directory name
-
-                if train_images[real_bcs] != test_cow:  # check if the test image is the train image
-                    predicted_bcs = bcs_polynomial_fit.predict(test_cow, real_bcs)
-                    print(f"Real: {real_bcs} - Predicted: {predicted_bcs}")
-                    if real_bcs == predicted_bcs:
-                        results["right"] += 1
-                    else:
-                        results["wrong"] += 1
-
-    print(results)
+    # for directory in os.walk(images_path):
+    #     if len(directory[1]) == 0:
+    #         for image_file in directory[2]:  # walk through the image files in directories
+    #             test_cow = directory[0] + os.sep + image_file
+    #             real_bcs = float(
+    #                 directory[0].split(os.sep)[-1].split("_")[-1])  # get the BCS number from the directory name
+    #
+    #             if train_images[real_bcs] != test_cow:  # check if the test image is the train image
+    #                 predicted_bcs = bcs_polynomial_fit.predict(test_cow, real_bcs)
+    #                 print(f"Real: {real_bcs} - Predicted: {predicted_bcs}")
+    #                 if real_bcs == predicted_bcs:
+    #                     results["right"] += 1
+    #                 else:
+    #                     results["wrong"] += 1
+    #
+    # print(results)
 
 
 if __name__ == "__main__":
+    np.set_printoptions(suppress=True)
     main()
