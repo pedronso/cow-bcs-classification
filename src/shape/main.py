@@ -193,13 +193,13 @@ def main():
 
     bcs_polynomial_fit = BcsPolynomialFit()
     train_images = {
-        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "grabcut_2.png",
-        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_1.png",
-        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "grabcut_1.png",
-        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "grabcut_1.png",
-        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "grabcut_1.png",
-        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "grabcut_4.png",
-        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "grabcut_1.png",
+        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "vaca traseira_2.jpg",
+        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "vaca_traseira_1.jpg",
+        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "vaca_traseira_2.jpg",
+        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "vaca_traseira_1.jpg",
+        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "vaca_traseira_3.jpg",
+        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "vaca_traseira_4.jpg",
+        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "vaca_traseira_1.jpg",
     }
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
