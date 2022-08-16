@@ -189,15 +189,13 @@ class BcsPolynomialFit:
 
 
 def main():
-    images_path = os.path.abspath('../../images/grabcut')
+    images_path = os.path.abspath('../../images/segmentation_with_drawn_line/segmentation_with_drawn_line')
 
     bcs_polynomial_fit = BcsPolynomialFit()
     train_images = {
-        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "vaca traseira_2.jpg",
+        2.5: images_path + os.sep + "ECC_2.5" + os.sep + "vaca traseira_1.jpg",
         3.0: images_path + os.sep + "ECC_3.0" + os.sep + "vaca_traseira_1.jpg",
-        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "vaca_traseira_2.jpg",
-        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "vaca_traseira_1.jpg",
-        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "vaca_traseira_3.jpg",
+        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "vaca_traseira_3.jpg",
         4.0: images_path + os.sep + "ECC_4.0" + os.sep + "vaca_traseira_4.jpg",
         4.5: images_path + os.sep + "ECC_4.5" + os.sep + "vaca_traseira_1.jpg",
     }
