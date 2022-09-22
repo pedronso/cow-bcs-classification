@@ -1,4 +1,4 @@
-import cv2
+from cv2 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
@@ -37,6 +37,7 @@ class BcsPolynomialFit:
         mse_scores = {}
         cow_image, thresh, top_back_shape, x, y, polynomial_coefficients, polynomial = self.__create_polynomial(
             image_path)
+        #print(polynomial)
 
         i = 0
         j = 0
@@ -68,15 +69,14 @@ class BcsPolynomialFit:
                 j = 0
 
             ax[i, j].plot(new_x_real, new_y_real, "o", markersize=2, color="orange")
+            ax[i, j].plot(new_x_predict, new_y_predict, "o", markersize=2, color="blue")
             ax[i, j].plot(new_x_predict / cx, new_y_predict / cy, "o", markersize=2, color="green")
             ax[i, j].axis("equal")
-            ax[i, j].legend([f"known poly - ECC: {bcs}", f"resized poly - ECC: {real_bcs}"], loc="best")
+            ax[i, j].legend([f"known poly - ECC: {bcs}", f"poly to be predicted - ECC: {real_bcs}", "resized poly"], loc="best")
 
             j += 1
 
-        #print(polynomial)
-        print(image_path)
-        print(mse_scores)
+        print("mse",mse_scores)
         plt.show()
 
         return float(min(mse_scores, key=mse_scores.get))
@@ -190,22 +190,21 @@ class BcsPolynomialFit:
 
 
 def main():
-    images_path = r'images\Gimp_Segmentation'
+    images_path = r'images\grabcut'
 
     bcs_polynomial_fit = BcsPolynomialFit()
     train_images = {
-        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "vaca traseira 2.jpg",
-        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "vaca traseira 1.jpg",
-        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "vaca traseira 2.jpg",
-        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "vaca traseira 1.jpg",
-        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "vaca traseira 3.jpg",
-        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "vaca traseira 7.jpg",
-        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "vaca traseira 1.jpg",
-    }	
-    
+        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "grabcut_2.png",
+        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "grabcut_1.png",
+        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "grabcut_1.png",
+        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "grabcut_1.png",
+        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "grabcut_1.png",
+        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "grabcut_4.png",
+        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "grabcut_1.png",
+    }
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
-    #bcs_polynomial_fit.show_characteristic_polynomials()
+    # bcs_polynomial_fit.show_characteristic_polynomials()
     #bcs_polynomial_fit.derivative_analysis()
 
     results = {"right": 0, "wrong": 0}
@@ -215,7 +214,6 @@ def main():
     # directory[0] -> directory path
     # directory[1] -> subdirectories names
     # directory[2] -> directory files
-    
     for directory in os.walk(images_path):
         if len(directory[1]) == 0:
             for image_file in directory[2]:  # walk through the image files in directories
@@ -224,13 +222,13 @@ def main():
                     directory[0].split(os.sep)[-1].split("_")[-1])  # get the BCS number from the directory name
 
                 if train_images[real_bcs] != test_cow:  # check if the test image is the train image
+                    print(test_cow)
                     predicted_bcs = bcs_polynomial_fit.predict(test_cow, real_bcs)
                     print(f"Real: {real_bcs} - Predicted: {predicted_bcs}")
                     if real_bcs == predicted_bcs:
                         results["right"] += 1
                     else:
                         results["wrong"] += 1
-    
 
     print(results)
 
