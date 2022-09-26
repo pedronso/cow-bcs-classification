@@ -190,18 +190,15 @@ class BcsPolynomialFit:
 
 
 def main():
-    images_path = r'images\Gimp_Segmentation'
+    images_path = r'images\new_images_segmented _filter'
 
     bcs_polynomial_fit = BcsPolynomialFit()
     train_images = {
-        2.75: images_path + os.sep + "ECC_2.75" + os.sep + "vaca traseira 2.jpg",
-        3.0: images_path + os.sep + "ECC_3.0" + os.sep + "vaca traseira 1.jpg",
-        3.25: images_path + os.sep + "ECC_3.25" + os.sep + "vaca traseira 2.jpg",
-        3.5: images_path + os.sep + "ECC_3.5" + os.sep + "vaca traseira 1.jpg",
-        3.75: images_path + os.sep + "ECC_3.75" + os.sep + "vaca traseira 3.jpg",
-        4.0: images_path + os.sep + "ECC_4.0" + os.sep + "vaca traseira 7.jpg",
-        4.5: images_path + os.sep + "ECC_4.5" + os.sep + "vaca traseira 1.jpg",
-    }	
+        2.5: images_path + os.sep + "2.5" + os.sep + "4.jpeg",
+        3.0: images_path + os.sep + "3.0" + os.sep + "1.jpeg",
+        3.5: images_path + os.sep + "3.5" + os.sep + "14.jpeg",
+        4.0: images_path + os.sep + "4.0" + os.sep + "3.jpeg",
+    }
     
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
