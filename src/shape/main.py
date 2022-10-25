@@ -33,7 +33,14 @@ class BcsPolynomialFit:
                 "polynomial": np.poly1d(polynomial_coefficients)
             }
 
+    def mean_squared(self,x_real, y_real, x_predict, y_predict, points):
+        poly1= np.array([list(a) for a in zip(x_real,y_real)])
+        poly2= np.array([list(a) for a in zip(x_predict,y_predict)])
+
+        return (np.sum([np.linalg.norm(p1 - p2)**2 for p1, p2 in zip(poly1, poly2)])/points)
+
     def predict(self, image_path: str, real_bcs: float) -> float:
+        points = 500
         mse_scores = {}
         cow_image, thresh, top_back_shape, x, y, polynomial_coefficients, polynomial = self.__create_polynomial(
             image_path)
@@ -44,14 +51,22 @@ class BcsPolynomialFit:
 
         for bcs, info in self.__characteristic_bcs_info.items():
             min_x_real = sorted(info["x"])[0]
+            #print(bcs,"min_X_real: ",min_x_real)
             max_x_real = sorted(info["x"])[-1]
+            #print(bcs,"max_X_real: ",max_x_real)
             min_x_predict = sorted(x)[0]
+            #print(bcs,"min_X_predict: ",min_x_predict)
             max_x_predict = sorted(x)[-1]
+            #print(bcs,"max_X_predict: ",max_x_predict)
 
-            new_x_real = np.linspace(min_x_real, max_x_real, 500)
+            new_x_real = np.linspace(min_x_real, max_x_real, points)
+            #print(bcs,"new_X_real: ",new_x_real)
             new_y_real = info["polynomial"](new_x_real)
-            new_x_predict = np.linspace(min_x_predict, max_x_predict, 500)
+            #print(bcs,"new_Y_real: ",new_y_real)
+            new_x_predict = np.linspace(min_x_predict, max_x_predict, points)
+            #print(bcs,"new_X_predict: ",new_x_predict)
             new_y_predict = polynomial(new_x_predict)
+            #print(bcs,"new_Y_predict: ",new_y_predict)
 
             min_y_real = sorted(new_y_real)[0]
             max_y_real = sorted(new_y_real)[-1]
@@ -59,9 +74,22 @@ class BcsPolynomialFit:
             max_y_predict = sorted(new_y_predict)[-1]
 
             cx = (max_x_predict - min_x_predict) / (max_x_real - min_x_real)
+            #print(cx," = ",max_x_predict, "-", min_x_predict ,"/", max_x_real,"-", min_x_real)
             cy = (max_y_predict - min_y_predict) / (max_y_real - min_y_real)
+            #print(cy," = ",max_y_predict, "-", min_y_predict ,"/", max_y_real,"-", min_y_real)
 
-            mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict / cy)
+            #print(bcs,"new_X_predict: ",new_x_predict/cx)
+            #print(bcs,"new_Y_predict: ",new_y_predict/cy)
+
+            #print(new_y_predict)
+            #print("mse: ",new_y_real,",",new_y_predict/cy)
+            #print(len(new_y_predict),len(new_y_real))
+        
+            #mse normal só com y:
+            #mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict / cy)
+            #distância entre pontos com x e y:
+            mse_scores[bcs] = self.mean_squared(new_x_real,new_y_real, new_x_predict/cx, new_y_predict / cy, points)
+            #print(mse_scores[bcs])
 
             if j > 3:
                 i += 1
@@ -190,6 +218,7 @@ class BcsPolynomialFit:
 
 
 def main():
+
     images_path = r'images\test_new_images'
 
     bcs_polynomial_fit = BcsPolynomialFit()
@@ -202,6 +231,7 @@ def main():
         3.75: images_path + os.sep + "3.75" + os.sep + "3.jpeg",
         4.0: images_path + os.sep + "4.0" + os.sep + "5.jpeg"
     }	
+
     
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
