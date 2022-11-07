@@ -86,9 +86,9 @@ class BcsPolynomialFit:
             #print(len(new_y_predict),len(new_y_real))
         
             #mse normal só com y:
-            #mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict / cy)
+            mse_scores[bcs] = mean_squared_error(new_y_real, new_y_predict / cy)
             #distância entre pontos com x e y:
-            mse_scores[bcs] = self.mean_squared(new_x_real,new_y_real, new_x_predict/cx, new_y_predict / cy, points)
+            #mse_scores[bcs] = self.mean_squared(new_x_real,new_y_real, new_x_predict/cx, new_y_predict / cy, points)
             #print(mse_scores[bcs])
 
             if j > 3:
@@ -105,7 +105,7 @@ class BcsPolynomialFit:
         #print(polynomial)
         print(image_path)
         print(mse_scores)
-        #plt.show()
+        plt.show()
 
         return float(min(mse_scores, key=mse_scores.get))
 
@@ -219,17 +219,17 @@ class BcsPolynomialFit:
 
 def main():
 
-    images_path = r'images\test_new_images'
+    images_path = r'images\resized_images\all_images'
 
     bcs_polynomial_fit = BcsPolynomialFit()
     train_images = {
-        2.50: images_path + os.sep + "2.50" + os.sep + "5.jpeg",
+        2.50: images_path + os.sep + "2.50" + os.sep + "3.jpeg",
         2.75: images_path + os.sep + "2.75" + os.sep + "1.jpeg",
-        3.0: images_path + os.sep + "3.0" + os.sep + "3.jpeg",
-        3.25: images_path + os.sep + "3.25" + os.sep + "1.jpeg",
-        3.50: images_path + os.sep + "3.50" + os.sep + "18.jpeg",
+        3.0: images_path + os.sep + "3.0" + os.sep + "5.jpeg",
+        3.25: images_path + os.sep + "3.25" + os.sep + "2.jpeg",
+        3.50: images_path + os.sep + "3.50" + os.sep + "14.jpeg",
         3.75: images_path + os.sep + "3.75" + os.sep + "3.jpeg",
-        4.0: images_path + os.sep + "4.0" + os.sep + "5.jpeg"
+        4.0: images_path + os.sep + "4.0" + os.sep + "13.jpeg"
     }	
 
     
