@@ -105,7 +105,7 @@ class BcsPolynomialFit:
         #print(polynomial)
         print(image_path)
         print(mse_scores)
-        #plt.show()
+        plt.show()
 
         return float(min(mse_scores, key=mse_scores.get))
 
@@ -142,7 +142,7 @@ class BcsPolynomialFit:
 
     def show_characteristic_polynomials(self):
         for bcs, info in self.__characteristic_bcs_info.items():
-            fig, ax = plt.subplots(1, 4, figsize=(12, 5))
+            fig, ax = plt.subplots(1, 5, figsize=(12, 5))
 
             ax[0].imshow(cv2.cvtColor(info["image"], cv2.COLOR_GRAY2RGB))
             ax[0].set_title(f"Cow BCS = {bcs}")
@@ -156,10 +156,15 @@ class BcsPolynomialFit:
             polynomial_results = info["polynomial"](info["x"])
 
             ax[3].plot(info["x"], info["y"], "o", markersize=2, color="orange")
-            ax[3].plot(info["x"], polynomial_results, "o", markersize=3)
-            ax[3].set_title(f"Polynomial degree = {self.__polynomial_degree}")
-            ax[3].legend(["cow points", "polynomial"], loc="best")
+            ax[3].set_title(f"Cow countour")
+            ax[3].legend(["cow points"], loc="best")
             ax[3].axis("equal")
+
+            ax[4].plot(info["x"], polynomial_results, "o", markersize=3)
+            ax[4].set_title(f"Polynomial degree = {self.__polynomial_degree}")
+            ax[4].legend(["polynomial"], loc="best")
+            ax[4].axis("equal")
+            
 
             # break
         plt.show()
@@ -167,30 +172,44 @@ class BcsPolynomialFit:
     def __create_polynomial(self, image_path: str):
         cow_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         # cv2.imshow("img",cow_image)
+        # cv2.imwrite("img.jpg",cow_image)
+        
         _, thresh = cv2.threshold(cow_image, self.__threshold, 255, cv2.THRESH_BINARY)
         # cv2.imshow("img threshold",thresh)
+        # cv2.imwrite("img_threshold.jpg",thresh)
+
 
         blur_image = cv2.blur(thresh, self.__kernel_size)
         # cv2.imshow("img blur",blur_image)
+        # cv2.imwrite("img_blur.jpg",blur_image)
+        
+
         blur_image[blur_image != 255] = 0
+        # cv2.imshow("img blur pos",blur_image)
+        # cv2.imwrite("img blur pos",blur_image)
+        
 
         # dilate the image to prevent black pixels in the center of the cow
         kernel = np.ones(self.__kernel_size, np.uint8)
-        # cv2.imshow("img kernel",kernel)
+        # print("img kernel",kernel)
 
         dilated_image = cv2.dilate(blur_image, kernel, iterations=2)
         # cv2.imshow("img dilated",dilated_image)
+        # cv2.imwrite("img_dilated.jpg",dilated_image)
 
         erode_image = self.__erode(dilated_image, kernel_size=self.__kernel_size)
         # cv2.imshow("img erode",erode_image)
+        # cv2.imwrite("img_erode.jpg",erode_image)
 
         subtract_image = cv2.subtract(dilated_image, erode_image)
         # cv2.imshow("img subtract",subtract_image)
+        # cv2.imwrite("img_subtract.jpg",subtract_image)
 
         top_back_shape = self.__get_top_back_shape(subtract_image)
         # cv2.imshow("img top",top_back_shape)
+        # cv2.imwrite("img_top.jpg",top_back_shape)
 
-        # cv2.waitKey(0)
+        cv2.waitKey(0)
         x, y = self.__translate_shape_coords_to_origin(top_back_shape)
         polynomial_coefficients = np.polyfit(x, y, deg=self.__polynomial_degree)
         polynomial = np.poly1d(polynomial_coefficients)
@@ -247,7 +266,7 @@ def main():
 
     bcs_polynomial_fit.set_characteristic_bcs_images(train_images)
     bcs_polynomial_fit.create_characteristic_polynomials()
-    bcs_polynomial_fit.show_characteristic_polynomials()
+    # bcs_polynomial_fit.show_characteristic_polynomials()
     #bcs_polynomial_fit.derivative_analysis()
 
     results = {"right": 0, "wrong": 0}
